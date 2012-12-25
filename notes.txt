@@ -1,0 +1,37 @@
+-28x28 pixel image
+-value from 0 - 255 for each pixel.
+--0 = empty/white
+--255 = colored/dark
+
+-train dataset
+-first column in csv file is the digit associated with the pixels. 
+-following 784 (28x28) columns are pixel values
+-pixels go from left to right, top to bottom
+
+Each pixel column in the training set has a name like pixelx, where x is an integer between 0 and 783, inclusive. To locate this pixel on the image, suppose that we have decomposed x as x = i * 28 + j, where i and j are integers between 0 and 27, inclusive. Then pixelx is located on row i and column j of a 28 x 28 matrix, (indexing by zero).
+
+000 001 002 003 ... 026 027
+028 029 030 031 ... 054 055
+056 057 058 059 ... 082 083
+ |   |   |   |  ...  |   |
+ 728 729 730 731 ... 754 755
+ 756 757 758 759 ... 782 783 
+
+ -test dataset
+ -same as train, except first column is missing, ie no label
+
+ Your submission file should be in the following format: For each of the 28000 images in the test set, output a single line with the digit you predict. For example, if you predict that the first image is of a 3, the second image is of a 7, and the third image is of a 8, then your submission file would look like:
+
+ 3
+ 7
+ 8
+ (27997 more lines)
+   You can download the benchmark submission files to see a complete example of what a submission file should look like.
+
+   Also included are benchmark solutions, and the code used to produce them:
+
+   rf_benchmark.csv and rf_benchmark.R are the random forests benchmark submission and the R script used to produce it, respectively.
+
+   knn_benchmark.csv and knn_benchmark.R are the KNN benchmark submission and the R script used to produce it, respectively.
+
+   The evaluation metric for this contest is the categorization accuracy, or the proportion of test images that are correctly classified. For example, a categorization accuracy of 0.97 indicates that you have correctly classified all but 3% of the images.
