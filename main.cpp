@@ -23,8 +23,10 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
    int averages[NUM_OF_DIGITS][NUM_TOTAL_PIXELS];
+   int count[NUM_OF_DIGITS];
 
    for (int i = 0; i < NUM_OF_DIGITS; ++i) {
+      count[i] = 0;
       for (int j = 0; j < NUM_TOTAL_PIXELS; ++j) {
          averages[i][j] = 0;
       }
@@ -47,12 +49,46 @@ int main(int argc, char* argv[]) {
       // get the first column/label for this instance
       getline (instance, label, ',');
       index = atoi(label.c_str());
+      count[index]++;
 
-      averages[index][0]++;
+      // add the pixel values for this instance to the running totals
+      int i = 0;
+      while (getline(instance, pixelValue, ',')) {
+         averages[index][i] += atoi(pixelValue.c_str()); 
+         i++;
+      }
 
    }
 
    for (int i = 0; i < NUM_OF_DIGITS; ++i) {
-      cout << i << " - " << averages[i][0] << endl;
+      cout << i << " - " << count[i] << endl;
+   }
+
+   // see what each image looks like
+   for (int k = 0; k < 10; k++) {
+      for (int i = 0; i < 28; ++i) {
+         for (int j = 0; j < 28; ++j) {
+            cout << averages[k][(i*28) + j] / count[k] << "\t";
+         }
+         cout << endl;
+      }
    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
