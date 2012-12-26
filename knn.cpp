@@ -15,6 +15,7 @@ then when classifying new instances, find the nearest k instances by euclidean d
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include <map>
 
 #define NUM_DIGITS 10
 #define LENGTH_OF_IMAGE 28
@@ -92,6 +93,9 @@ void classify(vector<int> unknown, vector< vector<int> > instances) {
    unsigned int lowestDifference = -1;
    int bestGuess = -1;
 
+   // multimap to hold <label, distance>
+   multimap<int, int> sorted;
+
    for (vector< vector<int> >::iterator i = instances.begin();
          i != instances.end();
          ++i) {
@@ -104,13 +108,25 @@ void classify(vector<int> unknown, vector< vector<int> > instances) {
          totalDifference += ((*ii - *ij) * (*ii - *ij));
       }
       totalDifference = sqrt(totalDifference);
-   //   cout << ++countz << ": " << (*i)[0] << " - " << totalDifference << endl;
-      if (totalDifference < lowestDifference) {
-         lowestDifference = totalDifference;
-         bestGuess = (*i)[0];
+
+      // the element in the multimap with the largest difference
+      multimap<int, int>::reverse_iterator end = sorted.rbegin();
+      if (sorted.size() < 20) { // if there is less than 20 neighbours, just insert regardless
+         sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
+      } else if (end->first > totalDifference) { // this instance is closer than the worst neighbour in the sorted map
+         sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
+         // delete the last element
+         sorted.erase(--sorted.rbegin().base());
       }
    }
-   cout << bestGuess << " - " << lowestDifference << endl;
+
+   for (multimap<int,int>::iterator test = sorted.begin();
+         test != sorted.end();
+         test++) {
+      //cout << test->first << " - " << test->second << endl;
+      cout << test->second << ",";
+   }
+   cout << endl;
 
 }
 
