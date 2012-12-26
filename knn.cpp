@@ -24,7 +24,7 @@ then when classifying new instances, find the nearest k instances by euclidean d
 
 using namespace std;
 
-void classify(vector<int> unknown, vector< vector<int> > instances);
+void classify(vector<int> unknown, vector< vector<int> > instances, int k);
 
 int main(int argc, char* argv[]) {
 
@@ -79,7 +79,9 @@ int main(int argc, char* argv[]) {
             unknown.push_back(atoi(pixelValue.c_str()));
          }
 
-         classify(unknown, instances);
+         cerr << ++count << " - ";
+         // knn, k = 10
+         classify(unknown, instances, 10);
       }
 
    }
@@ -89,12 +91,13 @@ int main(int argc, char* argv[]) {
 
 
 // knn, with k = 1, ie, just nearest neighbour
-void classify(vector<int> unknown, vector< vector<int> > instances) {
+void classify(vector<int> unknown, vector< vector<int> > instances, int k) {
    unsigned int lowestDifference = -1;
    int bestGuess = -1;
 
    // multimap to hold <label, distance>
    multimap<int, int> sorted;
+   sorted.insert(pair<int,int>(100000, 0));
 
    for (vector< vector<int> >::iterator i = instances.begin();
          i != instances.end();
@@ -103,21 +106,46 @@ void classify(vector<int> unknown, vector< vector<int> > instances) {
       int totalDifference = 0;
       vector<int>::iterator ii = (*i).begin() + 1; // +1 to skip over the label for this instance
       vector<int>::iterator ij = unknown.begin(); 
+      // the element in the multimap with the largest difference
+      multimap<int, int>::reverse_iterator end = sorted.rbegin();
+      int biggest = end->first * end->first;
 
       for ( ; ii != (*i).end() && ij != unknown.end(); ii++, ij++) {
          totalDifference += ((*ii - *ij) * (*ii - *ij));
-      }
-      totalDifference = sqrt(totalDifference);
 
-      // the element in the multimap with the largest difference
-      multimap<int, int>::reverse_iterator end = sorted.rbegin();
-      if (sorted.size() < 20) { // if there is less than 20 neighbours, just insert regardless
-         sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
-      } else if (end->first > totalDifference) { // this instance is closer than the worst neighbour in the sorted map
-         sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
-         // delete the last element
-         sorted.erase(--sorted.rbegin().base());
+         // early exit
+         // if our difference is already too big, just skip it
+         if (totalDifference > biggest) {
+            break;
+         }
+
       }
+
+      // this instance is closer than the worst neighbour in the sorted map
+      if (totalDifference < biggest) {
+         totalDifference = sqrt(totalDifference);
+         sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
+
+         // delete the last element
+         if (sorted.size() > k) {
+            sorted.erase(--sorted.rbegin().base());
+         }
+
+         // early exist
+         // if the map contains all the same label, then just quit early
+         int sum = 0;
+         multimap<int,int>::iterator test = sorted.begin();
+         int first = test->second;
+         for( ; test != sorted.end(); test++) {
+            sum += test->second;
+         }
+         if (sum == first * k) {
+            break;
+         }
+
+      }
+
+
    }
 
    for (multimap<int,int>::iterator test = sorted.begin();
@@ -125,7 +153,9 @@ void classify(vector<int> unknown, vector< vector<int> > instances) {
          test++) {
       //cout << test->first << " - " << test->second << endl;
       cout << test->second << ",";
+      cerr << test->second << ",";
    }
+   cerr << endl;
    cout << endl;
 
 }
