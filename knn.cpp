@@ -24,7 +24,7 @@ then when classifying new instances, find the nearest k instances by euclidean d
 
 using namespace std;
 
-void classify(vector<int> unknown, vector< vector<int> > instances, int k);
+void classify(vector<int> unknown, vector< vector<int> > instances, unsigned int k);
 
 int main(int argc, char* argv[]) {
 
@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 
    // open file for reading
    ifstream fileTrain("train.csv", ifstream::in);
+   //ifstream fileTrain("train.csv.4200", ifstream::in);
    string line, instance, label, pixelValue;
 
    // get rid of the first line defining the columns
@@ -60,6 +61,7 @@ int main(int argc, char* argv[]) {
 
    }
 
+   //ifstream fileTest("test.csv", ifstream::in);
    ifstream fileTest("test.csv", ifstream::in);
 
    // again, discard the first line which contains column information
@@ -91,10 +93,7 @@ int main(int argc, char* argv[]) {
 
 
 // knn, with k = 1, ie, just nearest neighbour
-void classify(vector<int> unknown, vector< vector<int> > instances, int k) {
-   unsigned int lowestDifference = -1;
-   int bestGuess = -1;
-
+void classify(vector<int> unknown, vector< vector<int> > instances, unsigned int k) {
    // multimap to hold <label, distance>
    multimap<int, int> sorted;
    sorted.insert(pair<int,int>(100000, 0));
@@ -102,7 +101,7 @@ void classify(vector<int> unknown, vector< vector<int> > instances, int k) {
    for (vector< vector<int> >::iterator i = instances.begin();
          i != instances.end();
          ++i) {
-      int count = 0;
+      //int count = 0;
       int totalDifference = 0;
       vector<int>::iterator ii = (*i).begin() + 1; // +1 to skip over the label for this instance
       vector<int>::iterator ij = unknown.begin(); 
@@ -126,13 +125,14 @@ void classify(vector<int> unknown, vector< vector<int> > instances, int k) {
          totalDifference = sqrt(totalDifference);
          sorted.insert(pair<int, int>(totalDifference, (*i)[0]));
 
-         // delete the last element
+         // delete the last element if its not in our closest k neighbours
          if (sorted.size() > k) {
             sorted.erase(--sorted.rbegin().base());
          }
 
          // early exist
          // if the map contains all the same label, then just quit early
+         /*
          int sum = 0;
          multimap<int,int>::iterator test = sorted.begin();
          int first = test->second;
@@ -142,21 +142,34 @@ void classify(vector<int> unknown, vector< vector<int> > instances, int k) {
          if (sum == first * k) {
             break;
          }
+         */
 
       }
 
 
    }
 
+   int decision[NUM_DIGITS] = {0};
+
    for (multimap<int,int>::iterator test = sorted.begin();
          test != sorted.end();
          test++) {
       //cout << test->first << " - " << test->second << endl;
-      cout << test->second << ",";
-      cerr << test->second << ",";
+      //cout << test->second << ",";
+      decision[test->second]++;
    }
-   cerr << endl;
-   cout << endl;
+
+   int bestGuess = -1;
+   int highestCount = 0;
+   for (int i = 0; i < NUM_DIGITS; ++i) {
+      if (decision[i] > highestCount) {
+         bestGuess = i;
+         highestCount = decision[i];
+      }
+   }
+      
+   cerr << bestGuess << endl;
+   cout << bestGuess << endl;
 
 }
 
